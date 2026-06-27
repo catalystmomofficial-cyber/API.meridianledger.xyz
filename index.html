@@ -2123,6 +2123,26 @@
     var configured = SUPABASE_URL.indexOf('YOUR_') !== 0 && SUPABASE_ANON_KEY.indexOf('YOUR_') !== 0;
     if (configured && window.supabase && typeof window.supabase.createClient === 'function') {
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // When the user returns from the verification email, supabase-js
+      // detects the session in the URL and fires SIGNED_IN. (A persisted
+      // session on a normal reload fires INITIAL_SESSION, not SIGNED_IN,
+      // so the console only auto-opens on a fresh verification/sign-in.)
+      supabaseClient.auth.onAuthStateChange(function (event, session) {
+        if (event === 'SIGNED_IN' && session) {
+          var meta = (session.user && session.user.user_metadata) || {};
+          var companyName = meta.company_name || 'your company';
+
+          // Strip the auth tokens out of the address bar after handling them.
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+
+          openConsole();
+          showToast('Email verified — welcome to Meridian Ledger, ' + companyName + '!');
+          pushHealthLog('Verified session active for ' + companyName, true);
+        }
+      });
     }
   })();
 
