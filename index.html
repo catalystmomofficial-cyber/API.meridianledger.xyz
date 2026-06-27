@@ -1097,101 +1097,6 @@
     margin-top: 16px;
   }
 
-  /* ---------- DOCS PANEL ---------- */
-  .docs-scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 250;
-    background: var(--scrim);
-    display: none;
-  }
-
-  .docs-scrim.open { display: block; }
-
-  .docs-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100%;
-    width: min(480px, 100%);
-    background: var(--bg);
-    border-left: 1px solid var(--border-strong);
-    z-index: 251;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    box-shadow: -30px 0 80px -20px rgba(0,0,0,0.5);
-  }
-
-  .docs-panel.open { transform: translateX(0); }
-
-  .docs-panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .docs-panel-header .title { font-weight: 600; font-size: 15px; }
-
-  .docs-panel-body {
-    padding: 24px;
-    overflow-y: auto;
-    flex: 1;
-  }
-
-  .docs-endpoint { margin-bottom: 28px; }
-
-  .docs-endpoint .route {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    margin-bottom: 8px;
-  }
-
-  .docs-endpoint .route .method {
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-    border: 1px solid rgba(6,182,212,0.3);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-weight: 700;
-    font-size: 11.5px;
-  }
-
-  .docs-endpoint p {
-    font-size: 13px;
-    color: var(--muted);
-    margin: 0 0 10px;
-  }
-
-  .docs-endpoint pre {
-    margin: 0 0 10px;
-    background: var(--code-bg);
-    color: var(--code-text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.6;
-    overflow-x: auto;
-  }
-
-  .docs-endpoint .block-label {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--muted-2);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 6px;
-  }
-
   /* ---------- COOKIE BANNER ---------- */
   .cookie-banner {
     position: fixed;
@@ -1466,6 +1371,238 @@
   .timeline-item.active .timeline-status { color: var(--accent-strong); }
   .timeline-item.done .timeline-status { color: var(--recipient); }
 
+  /* ---------- DOCS CENTER ---------- */
+  .docs-center {
+    position: fixed;
+    inset: 0;
+    z-index: 220;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+  }
+
+  .docs-center.open { display: flex; }
+
+  .docs-center-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    padding: 0 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+  }
+
+  .docs-center-topbar .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .docs-center-topbar .brand { font-size: 15px; }
+
+  .docs-center-topbar .crumb {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted-2);
+    padding-left: 12px;
+    border-left: 1px solid var(--border-strong);
+  }
+
+  .docs-mobile-toggle {
+    display: none;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 15px;
+  }
+
+  .docs-center-body {
+    display: grid;
+    grid-template-columns: 268px 1fr;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+
+  .docs-sidebar {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    overflow-y: auto;
+    padding: 26px 16px 56px;
+  }
+
+  .docs-nav-group { margin-bottom: 26px; }
+
+  .docs-nav-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    padding: 0 12px;
+    margin-bottom: 10px;
+  }
+
+  .docs-nav-link {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--muted);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .docs-nav-link:hover { color: var(--text); background: var(--accent-soft); }
+
+  .docs-nav-link.active {
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .docs-main {
+    overflow-y: auto;
+    padding: 48px 56px 96px;
+  }
+
+  .docs-sheet { max-width: 760px; }
+
+  .docs-sheet .doc-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--accent-strong);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .docs-sheet h1 {
+    font-size: clamp(26px, 3vw, 33px);
+    margin: 0 0 14px;
+    letter-spacing: -0.02em;
+  }
+
+  .docs-sheet h2 {
+    font-size: 20px;
+    margin: 40px 0 14px;
+    letter-spacing: -0.01em;
+  }
+
+  .docs-sheet h3 { font-size: 15.5px; margin: 26px 0 10px; letter-spacing: -0.01em; }
+
+  .docs-sheet p { font-size: 15px; line-height: 1.7; color: var(--muted); margin: 0 0 16px; }
+
+  .docs-sheet .lead { font-size: 16.5px; color: var(--text); line-height: 1.65; margin-bottom: 24px; }
+
+  .docs-sheet ul { margin: 0 0 18px; padding-left: 20px; color: var(--muted); }
+  .docs-sheet li { font-size: 14.5px; line-height: 1.7; margin-bottom: 7px; }
+
+  .docs-sheet code:not(.code-body) {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+    color: var(--accent-strong);
+  }
+
+  .docs-callout {
+    background: var(--accent-soft);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .docs-callout .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-strong);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .endpoint-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 0 0 16px;
+  }
+
+  .endpoint-pill .method {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .endpoint-pill .method.get {
+    background: rgba(52, 211, 153, 0.12);
+    color: var(--recipient);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+
+  .docs-sheet .code-card { margin: 0 0 24px; }
+
+  .docs-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 0 0 24px; }
+  .docs-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-2);
+    padding: 0 12px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .docs-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+  .docs-table td.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--text); white-space: nowrap; }
+
+  @media (max-width: 860px) {
+    .docs-center-body { grid-template-columns: 1fr; }
+    .docs-sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      max-height: 70%;
+      border-right: none;
+      border-bottom: 1px solid var(--border-strong);
+      box-shadow: 0 24px 50px -24px rgba(0,0,0,0.5);
+      transform: translateY(-10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 6;
+    }
+    .docs-sidebar.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .docs-mobile-toggle { display: inline-flex; }
+    .docs-main { padding: 28px 22px 80px; }
+    .docs-center-topbar .crumb { display: none; }
+  }
+
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 980px) {
     .hero-grid { grid-template-columns: 1fr; }
@@ -1489,7 +1626,6 @@
     .console-overlay { padding: 0; }
     .console-shell { max-height: 100vh; border-radius: 0; }
     .ledger-table { display: block; overflow-x: auto; white-space: nowrap; }
-    .docs-panel { width: 100%; }
     .cookie-banner { left: 12px; right: 12px; bottom: 12px; flex-direction: column; align-items: flex-start; }
     .modal-card { padding: 24px; }
     .kyb-step-indicator .step-label { display: none; }
@@ -2028,75 +2164,49 @@
   </div>
 </div>
 
-<div class="docs-scrim" id="docsScrim" onclick="closeDocs()"></div>
-<div class="docs-panel" id="docsPanel">
-  <div class="docs-panel-header">
-    <div class="title">API Reference</div>
-    <button type="button" class="console-close" onclick="closeDocs()">✕</button>
+<div class="docs-center" id="docsCenter">
+  <div class="docs-center-topbar">
+    <div class="topbar-left">
+      <button type="button" class="docs-mobile-toggle" onclick="toggleDocsSidebar()" aria-label="Toggle topics">☰</button>
+      <div class="brand">
+        <span class="brand-mark">ML</span>
+        Meridian Ledger
+        <span class="crumb" id="docsCrumb">Documentation</span>
+      </div>
+    </div>
+    <button type="button" class="console-close" onclick="closeDocsCenter()" aria-label="Close docs">✕</button>
   </div>
-  <div class="docs-panel-body">
 
-    <div class="docs-endpoint">
-      <div class="route"><span class="method">POST</span> /api/v1/quote</div>
-      <p>Request a locked-rate FX quote. Direct USD↔foreign quotes are a single leg; foreign-to-foreign crosses route through USD and compound the spread across two legs.</p>
-      <div class="block-label">Request</div>
-      <pre>{
-  "amount": 50000,
-  "source_currency": "PHP",
-  "target_currency": "NGN"
-}</pre>
-      <div class="block-label">Response</div>
-      <pre>{
-  "status": "success",
-  "data": {
-    "quote_id": "quote_1782489883055",
-    "source_currency": "PHP",
-    "target_currency": "NGN",
-    "mid_market_rate": 25.641,
-    "spread_percent": 0.5,
-    "fx_legs": 2,
-    "effective_rate": 25.385,
-    "payout_amount": 1269262.82,
-    "expires_at": "2026-06-27T16:09:43Z",
-    "status": "active"
-  }
-}</pre>
-    </div>
+  <div class="docs-center-body">
+    <aside class="docs-sidebar" id="docsSidebar">
+      <div class="docs-nav-group">
+        <div class="docs-nav-title">Getting Started</div>
+        <a class="docs-nav-link" data-doc="welcome" onclick="showDoc('welcome')">Welcome</a>
+        <a class="docs-nav-link" data-doc="sandbox" onclick="showDoc('sandbox')">Sandbox Access</a>
+        <a class="docs-nav-link" data-doc="auth" onclick="showDoc('auth')">Authentication</a>
+      </div>
+      <div class="docs-nav-group">
+        <div class="docs-nav-title">Core Runtime</div>
+        <a class="docs-nav-link" data-doc="ledger" onclick="showDoc('ledger')">Core Ledger</a>
+        <a class="docs-nav-link" data-doc="quotes" onclick="showDoc('quotes')">Requesting Quotes</a>
+        <a class="docs-nav-link" data-doc="payouts" onclick="showDoc('payouts')">Initiating Payouts</a>
+      </div>
+      <div class="docs-nav-group">
+        <div class="docs-nav-title">Corridors &amp; Network</div>
+        <a class="docs-nav-link" data-doc="africa" onclick="showDoc('africa')">Pan-Africa (NGN, KES, GHS)</a>
+        <a class="docs-nav-link" data-doc="asia" onclick="showDoc('asia')">Southeast Asia (PHP, IDR, SGD)</a>
+        <a class="docs-nav-link" data-doc="global" onclick="showDoc('global')">Global Hubs (USD, EUR)</a>
+      </div>
+      <div class="docs-nav-group">
+        <div class="docs-nav-title">Global Compliance</div>
+        <a class="docs-nav-link" data-doc="kyb" onclick="showDoc('kyb')">The KYB Pipeline</a>
+        <a class="docs-nav-link" data-doc="production" onclick="showDoc('production')">Production Approval Process</a>
+      </div>
+    </aside>
 
-    <div class="docs-endpoint">
-      <div class="route"><span class="method">POST</span> /api/v1/payout</div>
-      <p>Settle a payout, optionally locking in a previously issued <code class="mono">quote_id</code>. Quotes are single-use and expire 5 minutes after issuance.</p>
-      <div class="block-label">Request</div>
-      <pre>{
-  "amount_usd": 1000,
-  "sender_id": "client_friend_corridor",
-  "recipient_bank_code": "011",
-  "recipient_account_number": "3099847112",
-  "quote_id": "quote_1782489883055"
-}</pre>
-      <div class="block-label">Response</div>
-      <pre>{
-  "status": "success",
-  "message": "Payout routed and settled successfully",
-  "data": {
-    "quote_id": "quote_1782489883055",
-    "payout_currency": "NGN",
-    "routing": { "rail": "bridge", "network": "solana" },
-    "payout": { "payout_amount_usd": 1269262.82 }
-  }
-}</pre>
-    </div>
-
-    <div class="docs-endpoint">
-      <div class="route"><span class="method">POST</span> /api/v1/keys</div>
-      <p>Issue a new sandbox or production API key. The raw key is returned exactly once — only its hash is stored.</p>
-      <div class="block-label">Request</div>
-      <pre>{
-  "account_id": "client_friend_corridor",
-  "environment": "production"
-}</pre>
-    </div>
-
+    <main class="docs-main" id="docsMain">
+      <div class="docs-sheet" id="docsContent"></div>
+    </main>
   </div>
 </div>
 
@@ -2396,17 +2506,324 @@
     }
   }
 
-  // ---------- Docs Panel ----------
+  // ---------- Docs Center ----------
 
-  function openDocs() {
-    document.getElementById('docsScrim').classList.add('open');
-    document.getElementById('docsPanel').classList.add('open');
+  var currentDocKey = 'welcome';
+
+  // Reusable code-block builder for the docs sheet.
+  function docCode(filename, body) {
+    return '<div class="code-card">' +
+      '<div class="titlebar">' +
+        '<div class="dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>' +
+        '<span class="filename">' + filename + '</span>' +
+        '<button class="copy-btn" onclick="copyDocCode(this)">Copy</button>' +
+      '</div>' +
+      '<pre class="code-body">' + body + '</pre>' +
+    '</div>';
   }
 
-  function closeDocs() {
-    document.getElementById('docsScrim').classList.remove('open');
-    document.getElementById('docsPanel').classList.remove('open');
+  function copyDocCode(btn) {
+    var pre = btn.closest('.code-card').querySelector('.code-body');
+    if (navigator.clipboard) navigator.clipboard.writeText(pre.innerText);
+    var label = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(function () { btn.textContent = label; }, 1400);
   }
+
+  var DOCS = {
+    welcome: {
+      title: 'Welcome',
+      html:
+        '<div class="doc-eyebrow">Getting Started</div>' +
+        '<h1>Meridian Ledger API</h1>' +
+        '<p class="lead">One REST API for real-time B2B settlement across Southeast Asia, Africa, and Latin America. You send and receive fiat — our internal ledger and digital-asset clearing engine handle the speed behind the scenes.</p>' +
+        '<p>Every corridor is reached through a single, uniform interface. Request a locked-rate quote, initiate a payout against it, and reconcile from a signed webhook. No per-country SDKs, no bespoke rails to integrate.</p>' +
+        '<div class="docs-callout"><span class="tag">Transparent pricing</span>FX spreads start from <strong>0.2%</strong> and scale by monthly volume and corridor. The exact spread for every quote is returned in the response as <code>spread_percent</code> — fully disclosed before you settle, never hidden in the rate.</div>' +
+        '<h2>Base URL</h2>' +
+        '<p>All requests are made over HTTPS to:</p>' +
+        docCode('base-url', '<span class="tok-str">https://api.meridianledger.xyz</span>') +
+        '<h2>The shape of an integration</h2>' +
+        '<ul>' +
+          '<li><strong>Quote</strong> — <code>POST /api/v1/quotes</code> locks an FX rate for 5 minutes.</li>' +
+          '<li><strong>Payout</strong> — <code>POST /api/v1/payouts</code> settles against that quote.</li>' +
+          '<li><strong>Reconcile</strong> — a signed webhook confirms the settlement event.</li>' +
+        '</ul>' +
+        '<p>Start in the sandbox (next page), then promote to production once your entity clears KYB.</p>'
+    },
+
+    sandbox: {
+      title: 'Sandbox Access',
+      html:
+        '<div class="doc-eyebrow">Getting Started</div>' +
+        '<h1>Sandbox Access</h1>' +
+        '<p class="lead">The sandbox is a complete, zero-risk mirror of production. It maps out instant JSON payloads for every endpoint — deterministic responses returned immediately, with no real funds moved and no settlement delay.</p>' +
+        '<p>Create a sandbox account from <strong>Get API Keys</strong> in the header. Your sandbox key is issued instantly and prefixed <code>sk_sandbox_</code>. Use it exactly as you would a production key — only the environment differs.</p>' +
+        '<div class="docs-callout"><span class="tag">Instant payloads</span>Sandbox quotes and payouts resolve synchronously. A <code>POST /api/v1/payouts</code> call returns a fully-formed settlement object in the same response — ideal for wiring up and testing your reconciliation logic before going live.</div>' +
+        '<h2>Your first sandbox call</h2>' +
+        '<p>Request a quote on the PHP&nbsp;→&nbsp;NGN corridor:</p>' +
+        docCode('sandbox-quote.sh',
+          '<span class="tok-comment"># Sandbox returns an instant, deterministic JSON payload</span>\n' +
+          '<span class="tok-method">curl</span> -X POST https://api.meridianledger.xyz/api/v1/quotes \\\n' +
+          '  -H <span class="tok-str">"Authorization: Bearer &lt;your_sandbox_key&gt;"</span> \\\n' +
+          '  -H <span class="tok-str">"Content-Type: application/json"</span> \\\n' +
+          '  -d <span class="tok-str">\'{ "amount": 50000, "source_currency": "PHP", "target_currency": "NGN" }\'</span>') +
+        '<h2>What you get back</h2>' +
+        docCode('200 OK',
+          '{\n' +
+          '  <span class="tok-key">"status"</span>: <span class="tok-str">"success"</span>,\n' +
+          '  <span class="tok-key">"environment"</span>: <span class="tok-str">"sandbox"</span>,\n' +
+          '  <span class="tok-key">"data"</span>: {\n' +
+          '    <span class="tok-key">"quote_id"</span>: <span class="tok-str">"quote_sbx_1782489883055"</span>,\n' +
+          '    <span class="tok-key">"spread_percent"</span>: <span class="tok-num">0.2</span>,\n' +
+          '    <span class="tok-key">"fx_legs"</span>: <span class="tok-num">2</span>,\n' +
+          '    <span class="tok-key">"effective_rate"</span>: <span class="tok-num">25.385</span>,\n' +
+          '    <span class="tok-key">"expires_at"</span>: <span class="tok-str">"2026-06-27T16:09:43Z"</span>\n' +
+          '  }\n' +
+          '}')
+    },
+
+    auth: {
+      title: 'Authentication',
+      html:
+        '<div class="doc-eyebrow">Getting Started</div>' +
+        '<h1>Authentication</h1>' +
+        '<p class="lead">Every request is authenticated with a bearer token. Pass your API key in the <code>Authorization</code> header on each call.</p>' +
+        docCode('headers',
+          '<span class="tok-key">Authorization</span>: Bearer &lt;your_sandbox_key&gt;\n' +
+          '<span class="tok-key">Content-Type</span>: application/json') +
+        '<p>Keys are scoped per environment. Sandbox keys (<code>sk_sandbox_</code>) only reach the sandbox; production keys (<code>sk_live_</code>) are issued after KYB approval. Keys are hashed at rest and shown exactly once at creation — store them in your secrets manager, never in source control.</p>' +
+        '<h2>Domain Integration (Namecheap)</h2>' +
+        '<p>If your domain is registered with <strong>Namecheap</strong>, Meridian Ledger can verify ownership and provision your webhook callback host directly through the Namecheap DNS integration. This lets signed settlement events POST to a domain you control, on a verified TXT-record chain of custody.</p>' +
+        '<div class="endpoint-pill"><span class="method">POST</span> /api/v1/integrations/namecheap/connect</div>' +
+        '<p>Link a Namecheap-managed domain to your account. Returns the DNS records you must publish to prove ownership.</p>' +
+        docCode('namecheap-connect.sh',
+          '<span class="tok-method">curl</span> -X POST https://api.meridianledger.xyz/api/v1/integrations/namecheap/connect \\\n' +
+          '  -H <span class="tok-str">"Authorization: Bearer &lt;your_sandbox_key&gt;"</span> \\\n' +
+          '  -H <span class="tok-str">"Content-Type: application/json"</span> \\\n' +
+          '  -d <span class="tok-str">\'{ "domain": "hooks.acme-exports.com", "callback_path": "/meridian/webhooks" }\'</span>') +
+        '<div class="endpoint-pill get"><span class="method get">GET</span> /api/v1/integrations/namecheap/dns</div>' +
+        '<p>Fetch the exact TXT and CNAME records to add in your Namecheap dashboard (Advanced DNS).</p>' +
+        docCode('200 OK',
+          '{\n' +
+          '  <span class="tok-key">"domain"</span>: <span class="tok-str">"hooks.acme-exports.com"</span>,\n' +
+          '  <span class="tok-key">"records"</span>: [\n' +
+          '    { <span class="tok-key">"type"</span>: <span class="tok-str">"TXT"</span>,   <span class="tok-key">"host"</span>: <span class="tok-str">"_meridian"</span>, <span class="tok-key">"value"</span>: <span class="tok-str">"ml-verify=8f2a...c91"</span> },\n' +
+          '    { <span class="tok-key">"type"</span>: <span class="tok-str">"CNAME"</span>, <span class="tok-key">"host"</span>: <span class="tok-str">"hooks"</span>,     <span class="tok-key">"value"</span>: <span class="tok-str">"edge.meridianledger.xyz"</span> }\n' +
+          '  ]\n' +
+          '}') +
+        '<div class="endpoint-pill"><span class="method">POST</span> /api/v1/integrations/namecheap/verify</div>' +
+        '<p>Trigger verification once the records have propagated. On success the domain is marked <code>verified</code> and webhooks begin delivering to it with HMAC-SHA256 signatures.</p>'
+    },
+
+    ledger: {
+      title: 'Core Ledger',
+      html:
+        '<div class="doc-eyebrow">Core Runtime</div>' +
+        '<h1>The Core Ledger</h1>' +
+        '<p class="lead">At the center of every corridor is the Meridian clearing core — a double-entry internal ledger that nets fiat in and fiat out while a digital-asset clearing engine bridges liquidity between legs.</p>' +
+        '<p>You never touch the digital-asset layer. You send fiat and your recipient receives fiat; the ledger records each leg atomically so balances always reconcile.</p>' +
+        '<h2>Settlement legs</h2>' +
+        '<ul>' +
+          '<li><strong>Single-leg</strong> — direct USD&nbsp;↔&nbsp;local corridors clear in one hop.</li>' +
+          '<li><strong>Two-leg</strong> — local-to-local crosses (e.g. PHP&nbsp;→&nbsp;NGN) route through a USD bridge; spread compounds across both legs and is disclosed as <code>fx_legs: 2</code>.</li>' +
+        '</ul>' +
+        '<div class="docs-callout"><span class="tag">Max 2 legs</span>No corridor ever compounds more than two FX legs. This caps spread accumulation and keeps effective rates predictable for treasury teams.</div>' +
+        '<h2>Reading a ledger entry</h2>' +
+        docCode('ledger-entry.json',
+          '{\n' +
+          '  <span class="tok-key">"entry_id"</span>: <span class="tok-str">"led_1782489883055"</span>,\n' +
+          '  <span class="tok-key">"leg"</span>: <span class="tok-num">1</span>,\n' +
+          '  <span class="tok-key">"debit"</span>:  { <span class="tok-key">"currency"</span>: <span class="tok-str">"PHP"</span>, <span class="tok-key">"amount"</span>: <span class="tok-num">50000</span> },\n' +
+          '  <span class="tok-key">"credit"</span>: { <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>, <span class="tok-key">"amount"</span>: <span class="tok-num">883.51</span> },\n' +
+          '  <span class="tok-key">"status"</span>: <span class="tok-str">"settled"</span>\n' +
+          '}')
+    },
+
+    quotes: {
+      title: 'Requesting Quotes',
+      html:
+        '<div class="doc-eyebrow">Core Runtime</div>' +
+        '<h1>Requesting Quotes</h1>' +
+        '<div class="endpoint-pill"><span class="method">POST</span> /api/v1/quotes</div>' +
+        '<p class="lead">Lock an FX rate before you settle. A quote freezes the effective rate for 5 minutes and discloses the full spread up front.</p>' +
+        '<p>Spreads start from <strong>0.2%</strong> and are tiered by monthly volume and corridor — higher-volume accounts and major corridors price tighter. The <code>spread_percent</code> field returns the exact figure applied to your quote.</p>' +
+        '<h2>Request</h2>' +
+        docCode('quote.sh',
+          '<span class="tok-method">curl</span> -X POST https://api.meridianledger.xyz/api/v1/quotes \\\n' +
+          '  -H <span class="tok-str">"Authorization: Bearer &lt;your_sandbox_key&gt;"</span> \\\n' +
+          '  -H <span class="tok-str">"Content-Type: application/json"</span> \\\n' +
+          '  -d <span class="tok-str">\'{ "amount": 50000, "source_currency": "PHP", "target_currency": "NGN" }\'</span>') +
+        '<h2>Response</h2>' +
+        docCode('200 OK',
+          '{\n' +
+          '  <span class="tok-key">"status"</span>: <span class="tok-str">"success"</span>,\n' +
+          '  <span class="tok-key">"data"</span>: {\n' +
+          '    <span class="tok-key">"quote_id"</span>: <span class="tok-str">"quote_1782489883055"</span>,\n' +
+          '    <span class="tok-key">"source_currency"</span>: <span class="tok-str">"PHP"</span>,\n' +
+          '    <span class="tok-key">"target_currency"</span>: <span class="tok-str">"NGN"</span>,\n' +
+          '    <span class="tok-key">"mid_market_rate"</span>: <span class="tok-num">25.641</span>,\n' +
+          '    <span class="tok-key">"spread_percent"</span>: <span class="tok-num">0.2</span>,\n' +
+          '    <span class="tok-key">"fx_legs"</span>: <span class="tok-num">2</span>,\n' +
+          '    <span class="tok-key">"effective_rate"</span>: <span class="tok-num">25.385</span>,\n' +
+          '    <span class="tok-key">"payout_amount"</span>: <span class="tok-num">1269262.82</span>,\n' +
+          '    <span class="tok-key">"expires_at"</span>: <span class="tok-str">"2026-06-27T16:09:43Z"</span>\n' +
+          '  }\n' +
+          '}') +
+        '<div class="docs-callout"><span class="tag">Single-use</span>Each <code>quote_id</code> may back exactly one payout and expires 5 minutes after issuance. Request a fresh quote if it lapses.</div>'
+    },
+
+    payouts: {
+      title: 'Initiating Payouts',
+      html:
+        '<div class="doc-eyebrow">Core Runtime</div>' +
+        '<h1>Initiating Payouts</h1>' +
+        '<div class="endpoint-pill"><span class="method">POST</span> /api/v1/payouts</div>' +
+        '<p class="lead">Settle funds to a recipient, optionally locking in a previously issued quote. In sandbox the payout resolves instantly; in production it routes through the optimal live rail.</p>' +
+        '<h2>Request</h2>' +
+        docCode('payout.sh',
+          '<span class="tok-method">curl</span> -X POST https://api.meridianledger.xyz/api/v1/payouts \\\n' +
+          '  -H <span class="tok-str">"Authorization: Bearer &lt;your_sandbox_key&gt;"</span> \\\n' +
+          '  -H <span class="tok-str">"Content-Type: application/json"</span> \\\n' +
+          '  -d <span class="tok-str">\'{\n' +
+          '        "quote_id": "quote_1782489883055",\n' +
+          '        "recipient_bank_code": "011",\n' +
+          '        "recipient_account_number": "3099847112"\n' +
+          '      }\'</span>') +
+        '<h2>Response</h2>' +
+        docCode('200 OK',
+          '{\n' +
+          '  <span class="tok-key">"status"</span>: <span class="tok-str">"success"</span>,\n' +
+          '  <span class="tok-key">"message"</span>: <span class="tok-str">"Payout routed and settled successfully"</span>,\n' +
+          '  <span class="tok-key">"data"</span>: {\n' +
+          '    <span class="tok-key">"payout_id"</span>: <span class="tok-str">"pay_1782489890231"</span>,\n' +
+          '    <span class="tok-key">"payout_currency"</span>: <span class="tok-str">"NGN"</span>,\n' +
+          '    <span class="tok-key">"routing"</span>: { <span class="tok-key">"rail"</span>: <span class="tok-str">"NIP"</span>, <span class="tok-key">"failover"</span>: <span class="tok-str">"none"</span> },\n' +
+          '    <span class="tok-key">"status"</span>: <span class="tok-str">"settled"</span>\n' +
+          '  }\n' +
+          '}') +
+        '<p>A signed <code>payout.settled</code> webhook is delivered to your verified callback URL with an <code>X-Meridian-Signature</code> (HMAC-SHA256) header for timing-safe verification.</p>'
+    },
+
+    africa: {
+      title: 'Pan-Africa',
+      html:
+        '<div class="doc-eyebrow">Corridors &amp; Network</div>' +
+        '<h1>Pan-Africa Corridors</h1>' +
+        '<p class="lead">Real-time payout into the largest African markets via domestic instant rails and mobile money.</p>' +
+        '<table class="docs-table"><thead><tr><th>Currency</th><th>Country</th><th>Rail</th><th>Speed</th></tr></thead><tbody>' +
+          '<tr><td class="mono">NGN</td><td>Nigeria</td><td>NIP</td><td>Real-time</td></tr>' +
+          '<tr><td class="mono">KES</td><td>Kenya</td><td>Mobile Money (M-Pesa)</td><td>Real-time</td></tr>' +
+          '<tr><td class="mono">GHS</td><td>Ghana</td><td>GhIPSS Instant Pay</td><td>Real-time</td></tr>' +
+        '</tbody></table>' +
+        '<p>NGN payouts require a 3-digit <code>recipient_bank_code</code> and a 10-digit NUBAN account number. KES mobile-money payouts take a wallet MSISDN in place of an account number.</p>' +
+        '<div class="docs-callout"><span class="tag">Spreads from 0.2%</span>African corridors price by volume tier; high-volume NGN settles at the tightest end of the range.</div>'
+    },
+
+    asia: {
+      title: 'Southeast Asia',
+      html:
+        '<div class="doc-eyebrow">Corridors &amp; Network</div>' +
+        '<h1>Southeast Asia Corridors</h1>' +
+        '<p class="lead">Instant clearing across ASEAN markets through national real-time payment switches.</p>' +
+        '<table class="docs-table"><thead><tr><th>Currency</th><th>Country</th><th>Rail</th><th>Speed</th></tr></thead><tbody>' +
+          '<tr><td class="mono">PHP</td><td>Philippines</td><td>InstaPay</td><td>Real-time</td></tr>' +
+          '<tr><td class="mono">IDR</td><td>Indonesia</td><td>BI-FAST</td><td>Real-time</td></tr>' +
+          '<tr><td class="mono">SGD</td><td>Singapore</td><td>FAST / PayNow</td><td>Real-time</td></tr>' +
+        '</tbody></table>' +
+        '<p>PHP and SGD support both account-number and proxy (mobile/UEN) addressing. Foreign-to-foreign crosses out of Asia (e.g. PHP&nbsp;→&nbsp;NGN) bridge through USD as a two-leg settlement.</p>'
+    },
+
+    global: {
+      title: 'Global Hubs',
+      html:
+        '<div class="doc-eyebrow">Corridors &amp; Network</div>' +
+        '<h1>Global Hubs</h1>' +
+        '<p class="lead">USD and EUR settlement hubs anchor the network and serve as the bridge currency for local-to-local crosses.</p>' +
+        '<table class="docs-table"><thead><tr><th>Currency</th><th>Region</th><th>Rail</th><th>Speed</th></tr></thead><tbody>' +
+          '<tr><td class="mono">USD</td><td>United States</td><td>FedNow / ACH</td><td>Same-day</td></tr>' +
+          '<tr><td class="mono">EUR</td><td>Eurozone</td><td>SEPA Instant</td><td>Real-time</td></tr>' +
+        '</tbody></table>' +
+        '<p>Direct USD&nbsp;↔&nbsp;local corridors are single-leg and carry the tightest spreads. EUR settles over SEPA Instant where the receiving bank participates, falling back to standard SEPA otherwise.</p>'
+    },
+
+    kyb: {
+      title: 'The KYB Pipeline',
+      html:
+        '<div class="doc-eyebrow">Global Compliance</div>' +
+        '<h1>The KYB Pipeline</h1>' +
+        '<p class="lead">Know-Your-Business verification is how a sandbox account is promoted to move real corporate funds. The pipeline is a guided, three-step submission you complete from the developer console.</p>' +
+        '<ul>' +
+          '<li><strong>Entity details</strong> — legal name, registration number, and operating jurisdiction.</li>' +
+          '<li><strong>Document upload</strong> — certificate of incorporation, proof of address, and beneficial-owner identification.</li>' +
+          '<li><strong>Corridor selection</strong> — the live corridors you intend to settle on.</li>' +
+        '</ul>' +
+        '<div class="docs-callout"><span class="tag">Sandbox stays open</span>Your sandbox keys keep working throughout review — you can build and test the full integration while KYB is in progress.</div>' +
+        '<p>On submission the entity enters review and a compliance officer verifies it, typically within 1–2 business days. Status is reported on the <code>account</code> object as <code>kyb_status</code>.</p>'
+    },
+
+    production: {
+      title: 'Production Approval',
+      html:
+        '<div class="doc-eyebrow">Global Compliance</div>' +
+        '<h1>Production Approval Process</h1>' +
+        '<p class="lead">Once KYB clears, you are issued live credentials and your account is flipped from <code>sandbox</code> to <code>live</code>.</p>' +
+        '<h2>Going live checklist</h2>' +
+        '<ul>' +
+          '<li>KYB approved (<code>kyb_status: "verified"</code>).</li>' +
+          '<li>A verified webhook domain — see <a class="inline" onclick="showDoc(\'auth\')">Domain Integration (Namecheap)</a> to provision and verify yours.</li>' +
+          '<li>Production key issued (<code>sk_live_</code>) and stored in your secrets manager.</li>' +
+        '</ul>' +
+        '<h2>Issue a production key</h2>' +
+        '<div class="endpoint-pill"><span class="method">POST</span> /api/v1/keys</div>' +
+        docCode('issue-key.sh',
+          '<span class="tok-method">curl</span> -X POST https://api.meridianledger.xyz/api/v1/keys \\\n' +
+          '  -H <span class="tok-str">"Authorization: Bearer &lt;your_sandbox_key&gt;"</span> \\\n' +
+          '  -H <span class="tok-str">"Content-Type: application/json"</span> \\\n' +
+          '  -d <span class="tok-str">\'{ "environment": "production" }\'</span>') +
+        '<div class="docs-callout"><span class="tag">Shown once</span>The raw production key is returned a single time in this response — only its hash is stored. Capture it immediately.</div>'
+    }
+  };
+
+  function showDoc(key) {
+    var doc = DOCS[key] || DOCS.welcome;
+    currentDocKey = DOCS[key] ? key : 'welcome';
+
+    document.getElementById('docsContent').innerHTML = doc.html;
+    document.getElementById('docsCrumb').textContent = doc.title;
+
+    var links = document.querySelectorAll('.docs-nav-link');
+    for (var i = 0; i < links.length; i++) {
+      links[i].classList.toggle('active', links[i].getAttribute('data-doc') === currentDocKey);
+    }
+
+    var main = document.getElementById('docsMain');
+    if (main) main.scrollTop = 0;
+
+    // On mobile, collapse the topic drawer after a selection.
+    document.getElementById('docsSidebar').classList.remove('open');
+  }
+
+  function openDocsCenter(key) {
+    // Gracefully hide other views before showing the docs center.
+    if (typeof closeConsole === 'function') closeConsole();
+
+    document.getElementById('docsCenter').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    showDoc(key || currentDocKey);
+  }
+
+  function closeDocsCenter() {
+    document.getElementById('docsCenter').classList.remove('open');
+    document.getElementById('docsSidebar').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function toggleDocsSidebar() {
+    document.getElementById('docsSidebar').classList.toggle('open');
+  }
+
+  // Existing "Docs" / "View API Docs" triggers route into the new center.
+  function openDocs() { openDocsCenter(); }
 
   // ---------- Cookie Banner ----------
 
