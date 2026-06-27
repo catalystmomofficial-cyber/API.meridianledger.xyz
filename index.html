@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #0B0F19;
@@ -2007,7 +2008,7 @@
       <h3>Create your sandbox account</h3>
       <button type="button" class="console-close" onclick="closeSignup()">✕</button>
     </div>
-    <p class="modal-sub">No live credentials needed — this spins up a sandbox account instantly.</p>
+    <p class="modal-sub">Create a sandbox account — we'll email you a verification link to activate it.</p>
 
     <form id="signupForm" onsubmit="handleSignupSubmit(event)">
       <label for="signupEmail">Email</label>
@@ -2109,6 +2110,22 @@
 </div>
 
 <script>
+  // ---------- Supabase ----------
+  // Replace these two values with your project's settings
+  // (Supabase dashboard → Project Settings → API).
+  // The anon/public key is safe to expose in client code — it is
+  // protected by Row Level Security, not secrecy.
+  var SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';       // e.g. https://abcdefgh.supabase.co
+  var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';     // the public "anon" key
+
+  var supabaseClient = null;
+  (function initSupabase() {
+    var configured = SUPABASE_URL.indexOf('YOUR_') !== 0 && SUPABASE_ANON_KEY.indexOf('YOUR_') !== 0;
+    if (configured && window.supabase && typeof window.supabase.createClient === 'function') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  })();
+
   function copySnippet(id) {
     var el = document.getElementById(id);
     var text = el.innerText;
@@ -2306,16 +2323,56 @@
     document.getElementById('signupOverlay').classList.remove('open');
   }
 
-  function handleSignupSubmit(event) {
+  async function handleSignupSubmit(event) {
     event.preventDefault();
+
+    var form = document.getElementById('signupForm');
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var email = document.getElementById('signupEmail').value.trim();
+    var password = document.getElementById('signupPassword').value;
     var companyName = document.getElementById('signupCompany').value.trim() || 'your company';
 
-    closeSignup();
-    document.getElementById('signupForm').reset();
+    // Demo fallback: if Supabase isn't configured yet, keep the original
+    // sandbox preview behavior so the page still works.
+    if (!supabaseClient) {
+      closeSignup();
+      form.reset();
+      openConsole();
+      showToast('Welcome to Meridian Ledger, ' + companyName + '! Your sandbox account is ready.');
+      pushHealthLog('Sandbox account created for ' + companyName, true);
+      return;
+    }
 
-    openConsole();
-    showToast('Welcome to Meridian Ledger, ' + companyName + '! Your sandbox account is ready.');
-    pushHealthLog('Sandbox account created for ' + companyName, true);
+    var originalLabel = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account…';
+
+    try {
+      var result = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            company_name: companyName,    // Saves business criteria right to user metadata
+            environment_mode: 'sandbox'   // Drops them natively into sandbox mode
+          }
+        }
+      });
+
+      if (result.error) {
+        showToast('Registration Error: ' + result.error.message);
+      } else {
+        closeSignup();
+        form.reset();
+        showToast('Verification link sent! Check your inbox to activate your sandbox account.');
+        pushHealthLog('Signup initiated for ' + companyName + ' — awaiting email verification', true);
+      }
+    } catch (err) {
+      showToast('Registration Error: ' + (err && err.message ? err.message : 'Something went wrong.'));
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
   }
 
   // ---------- Docs Panel ----------
