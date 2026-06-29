@@ -408,6 +408,10 @@
   .node .glyph { font-size: 18px; }
   .node .tag { font-size: 10.5px; color: var(--muted); letter-spacing: 0.01em; }
 
+  /* Dynamic corridor labels fade when the lane rotates */
+  .corr-dyn { transition: opacity 0.25s ease; }
+  .corridor.swapping .corr-dyn { opacity: 0; }
+
   .node-sender { box-shadow: 0 0 0 1px rgba(96,165,250,0.15); }
   .node-recipient { box-shadow: 0 0 0 1px rgba(52,211,153,0.15); }
 
@@ -1731,8 +1735,8 @@
         <div class="packet"></div>
 
         <div class="node node-sender">
-          <div class="glyph">₱</div>
-          <div class="tag">SENDER<br/>PHP / FIAT</div>
+          <div class="glyph corr-dyn" id="corrSenderGlyph">₱</div>
+          <div class="tag">SENDER<br/><span class="corr-dyn" id="corrSenderName">PHP</span> / FIAT</div>
         </div>
 
         <div class="node node-core">
@@ -1741,8 +1745,8 @@
         </div>
 
         <div class="node node-recipient">
-          <div class="glyph">₦</div>
-          <div class="tag">RECIPIENT<br/>NGN BANK</div>
+          <div class="glyph corr-dyn" id="corrRecipientGlyph">₦</div>
+          <div class="tag">RECIPIENT<br/><span class="corr-dyn" id="corrRecipientName">NGN</span> BANK</div>
         </div>
       </div>
 
@@ -2864,6 +2868,40 @@
 
   // Existing "Docs" / "View API Docs" triggers route into the new center.
   function openDocs() { openDocsCenter(); }
+
+  // ---------- Live corridor rotation ----------
+  // Cycle the hero corridor through several real lanes to show multi-rail
+  // breadth. Swaps in sync with the packet animation (at each travel cycle,
+  // when the packet is back at the sender), with a brief cross-fade.
+  (function rotateCorridor() {
+    var packet = document.querySelector('.packet');
+    var corridor = document.querySelector('.corridor');
+    var sg = document.getElementById('corrSenderGlyph');
+    var sn = document.getElementById('corrSenderName');
+    var rg = document.getElementById('corrRecipientGlyph');
+    var rn = document.getElementById('corrRecipientName');
+    if (!packet || !corridor || !sg || !sn || !rg || !rn) return;
+
+    var lanes = [
+      { sg: '₱',  sn: 'PHP', rg: '₦',  rn: 'NGN' },
+      { sg: 'Rp', sn: 'IDR', rg: 'KSh', rn: 'KES' },
+      { sg: 'R$', sn: 'BRL', rg: '₱',  rn: 'PHP' },
+      { sg: '$',  sn: 'USD', rg: '₵',  rn: 'GHS' },
+      { sg: '€',  sn: 'EUR', rg: 'Rp', rn: 'IDR' }
+    ];
+    var i = 0;
+
+    packet.addEventListener('animationiteration', function () {
+      i = (i + 1) % lanes.length;
+      var lane = lanes[i];
+      corridor.classList.add('swapping');
+      setTimeout(function () {
+        sg.textContent = lane.sg; sn.textContent = lane.sn;
+        rg.textContent = lane.rg; rn.textContent = lane.rn;
+        corridor.classList.remove('swapping');
+      }, 250);
+    });
+  })();
 
   // ---------- Cookie Banner ----------
 
