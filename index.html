@@ -727,28 +727,6 @@
 
   @keyframes caretBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  .playground-controls {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-
-  .pg-btn {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid var(--border-strong);
-    border-radius: 7px;
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
-  }
-
-  .pg-btn:hover { color: var(--accent-strong); border-color: var(--accent); }
-  .pg-btn[aria-pressed="true"] { color: var(--accent-strong); border-color: var(--accent); }
-
   /* ---------- CTA BANNER ---------- */
   .cta-banner {
     margin: 0 0 96px;
@@ -1920,11 +1898,6 @@
       <p>Request a quote, lock the rate, and settle — the response carries every number you need to reconcile, including how many FX legs were compounded.</p>
     </div>
 
-    <div class="playground-controls">
-      <button type="button" class="pg-btn" id="pgReplay" onclick="runPlayground(true)">↻ Replay</button>
-      <button type="button" class="pg-btn" id="pgSound" aria-pressed="false" onclick="togglePgSound()">🔇 Sound: Off</button>
-    </div>
-
     <div class="playground-grid">
       <div class="code-card">
         <div class="titlebar">
@@ -2956,7 +2929,7 @@
   // ---------- Live playground typewriter ----------
   // On first scroll into view, "type" the request, let the engine
   // calculate, then stream the response — once, then it stays readable.
-  // Optional synthesized key-click sound, off by default.
+  // Plays a soft mechanical key-click automatically (see keyClick).
   (function playgroundTyper() {
     var req = document.getElementById('req');
     var res = document.getElementById('res');
@@ -2980,31 +2953,49 @@
     req.style.minHeight = req.offsetHeight + 'px';
     res.style.minHeight = res.offsetHeight + 'px';
 
-    // ----- optional sound -----
-    var soundOn = false, audioCtx = null, lastClick = 0;
-    window.togglePgSound = function () {
-      soundOn = !soundOn;
-      var b = document.getElementById('pgSound');
-      b.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
-      b.textContent = soundOn ? '🔊 Sound: On' : '🔇 Sound: Off';
-      if (soundOn && !audioCtx) {
-        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-      }
-      if (soundOn && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    };
+    // ----- refined, low-volume mechanical key-click (auto-on) -----
+    // A short filtered-noise "tick" (not a tonal beep) at low volume, for
+    // a modern keyboard feel. Browsers block audio until a user gesture,
+    // so prime the context on the first interaction anywhere on the page;
+    // by the time the user reaches the playground it plays automatically.
+    var audioCtx = null, noiseBuf = null, lastClick = 0;
+    function ensureAudio() {
+      if (audioCtx) return;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var len = Math.floor(audioCtx.sampleRate * 0.03);
+        noiseBuf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        var d = noiseBuf.getChannelData(0);
+        for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      } catch (e) { audioCtx = null; }
+    }
+    function primeAudio() {
+      ensureAudio();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, primeAudio, { passive: true });
+    });
+
     function keyClick(ch) {
-      if (!soundOn || !audioCtx || ch.trim() === '') return;
+      if (!audioCtx || audioCtx.state !== 'running' || !noiseBuf) return;
+      if (ch === ' ' || ch === '\n' || ch === '\t' || ch === '') return; // natural gaps
       var now = performance.now();
-      if (now - lastClick < 22) return;
+      if (now - lastClick < 48) return; // realistic typist cadence, not a buzz
       lastClick = now;
       var t = audioCtx.currentTime;
-      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = 'square';
-      o.frequency.value = 500 + Math.random() * 130;
-      o.connect(g); g.connect(audioCtx.destination);
-      g.gain.setValueAtTime(0.016, t);
-      g.gain.exponentialRampToValueAtTime(0.0004, t + 0.03);
-      o.start(t); o.stop(t + 0.035);
+      var src = audioCtx.createBufferSource();
+      src.buffer = noiseBuf;
+      var bp = audioCtx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1650 + Math.random() * 500;
+      bp.Q.value = 0.9;
+      var g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.045, t + 0.002);       // soft, low peak
+      g.gain.exponentialRampToValueAtTime(0.0005, t + 0.028); // quick decay
+      src.connect(bp); bp.connect(g); g.connect(audioCtx.destination);
+      src.start(t); src.stop(t + 0.03);
     }
 
     function setStatus(state) {
@@ -3039,7 +3030,7 @@
     }
 
     var ran = false, running = false;
-    window.runPlayground = function (force) {
+    function runPlayground(force) {
       if (running) return;
       if (reduce && !force) {
         req.innerHTML = reqSnap.html; res.innerHTML = resSnap.html; setStatus('ok'); ran = true; return;
@@ -3054,7 +3045,7 @@
           });
         }, 460);
       });
-    };
+    }
 
     // Pre-blank below the fold (when we'll animate) so there's no
     // full-content flash when the section scrolls into view.
