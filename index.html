@@ -72,6 +72,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
+    overflow-x: clip; /* contain off-screen animated elements (toast, etc.) without breaking the sticky nav */
   }
 
   .wrap {
@@ -1116,6 +1117,8 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .modal-overlay.open { display: flex; }
@@ -1694,6 +1697,10 @@
     .features-grid { grid-template-columns: repeat(2, 1fr); }
     .playground-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
+    /* Trim the header to brand + theme + primary CTA so it never
+       overflows narrow screens. (Sign In opens the same modal as Get
+       API Keys; Docs is reachable from the hero.) */
+    .nav-cta .btn-secondary { display: none; }
     .console-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
@@ -1714,6 +1721,18 @@
     .modal-card { padding: 24px; }
     .kyb-step-indicator .step-label { display: none; }
     .kyb-header { flex-direction: column; }
+
+    /* Prevent iOS Safari from auto-zooming when a field is focused:
+       any form control under 16px triggers the zoom. */
+    input, select, textarea { font-size: 16px !important; }
+
+    /* Pin the signup modal near the top so the on-screen keyboard
+       can't shove it around; let the overlay scroll if needed. */
+    .modal-overlay { align-items: flex-start; padding: 16px; }
+    .modal-card { margin: auto; }
+
+    /* Keep the toast inside the viewport on narrow phones. */
+    .toast { left: 12px; right: 12px; top: 12px; max-width: none; }
   }
 </style>
 </head>
@@ -2537,10 +2556,12 @@
 
   function openSignup() {
     document.getElementById('signupOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
 
   function closeSignup() {
     document.getElementById('signupOverlay').classList.remove('open');
+    document.body.style.overflow = '';
   }
 
   async function handleSignupSubmit(event) {
