@@ -2381,6 +2381,21 @@
           pushHealthLog('Verified session active for ' + companyName, true);
         }
       });
+
+      // If the email link returns an error (expired link, or a redirect
+      // target that isn't allow-listed in Supabase → URL Configuration),
+      // tell the user instead of leaving them on a silent/"dead" page.
+      (function handleAuthCallback() {
+        var q = (window.location.hash || '') + '&' + (window.location.search || '');
+        if (q.indexOf('error') === -1) return;
+        var m = q.match(/error_description=([^&]+)/);
+        var desc = m ? decodeURIComponent(m[1].replace(/\+/g, ' '))
+                     : 'the verification link is invalid or has expired';
+        showToast('Verification problem: ' + desc + '. Try signing up again or use “Resend link”.');
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      })();
     }
   })();
 
