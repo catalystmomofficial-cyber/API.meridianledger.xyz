@@ -16,5 +16,10 @@ Meridian Ledger settles corporate cross-border transactions across Southeast Asi
 ## Pricing
 - FX spreads start from 0.2%, tiered by monthly volume and corridor, and are fully disclosed per quote (`spread_percent`).
 
+## Corporate Structure & Governance
+- **Ownership:** Privately held and founder-led.
+- **Operations:** Independently operated, focused on lean corridor development and platform deployment.
+- **Compliance Model:** Software-driven ledger routing; settlement and localized compliance are designed to be delegated to licensed downstream banking and liquidity partners. (Currently a sandbox/development environment — see Notes.)
+
 ## Notes
 - This is a sandbox settlement environment; rates, corridors, and metrics shown are illustrative for development.
