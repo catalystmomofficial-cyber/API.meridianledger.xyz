@@ -1132,6 +1132,19 @@
     margin: 6px 0 22px;
   }
 
+  .modal-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    color: var(--accent-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0 18px;
+  }
+
   .modal-card form label {
     display: block;
     font-size: 12.5px;
@@ -2224,26 +2237,46 @@
 
 <div class="modal-overlay" id="signupOverlay">
   <div class="modal-card">
-    <div class="modal-head">
-      <h3>Create your sandbox account</h3>
-      <button type="button" class="console-close" onclick="closeSignup()">✕</button>
+
+    <!-- FORM VIEW -->
+    <div id="signupFormView">
+      <div class="modal-head">
+        <h3>Create your sandbox account</h3>
+        <button type="button" class="console-close" onclick="closeSignup()">✕</button>
+      </div>
+      <p class="modal-sub">Create a sandbox account — we'll email you a verification link to activate it.</p>
+
+      <form id="signupForm" onsubmit="handleSignupSubmit(event)">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" placeholder="you@company.com" required />
+
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" required />
+
+        <label for="signupCompany">Company Name</label>
+        <input type="text" id="signupCompany" placeholder="Acme Exports Ltd." required />
+
+        <button type="submit" class="btn btn-primary">Create Sandbox Account →</button>
+      </form>
+
+      <div class="modal-foot">By continuing you agree this is a sandbox environment for development purposes.</div>
     </div>
-    <p class="modal-sub">Create a sandbox account — we'll email you a verification link to activate it.</p>
 
-    <form id="signupForm" onsubmit="handleSignupSubmit(event)">
-      <label for="signupEmail">Email</label>
-      <input type="email" id="signupEmail" placeholder="you@company.com" required />
+    <!-- CHECK INBOX VIEW (persistent, dismissible) -->
+    <div id="signupSentView" style="display:none;">
+      <div class="modal-head">
+        <h3>Check your email</h3>
+        <button type="button" class="console-close" onclick="closeSignup()">✕</button>
+      </div>
+      <div class="modal-mark">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      </div>
+      <p class="modal-sub">We sent a verification link to <strong id="sentEmail" style="color:var(--text);"></strong>. Click it to activate your sandbox account and get your API keys.</p>
+      <p class="modal-sub" style="margin-top:-10px;">Didn't get it? Check your spam folder, or resend it below.</p>
+      <button type="button" class="btn btn-secondary" id="resendBtn" style="width:100%; justify-content:center;" onclick="resendVerification()">Resend link</button>
+      <div class="modal-foot">You can close this — the link in your inbox stays valid.</div>
+    </div>
 
-      <label for="signupPassword">Password</label>
-      <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" required />
-
-      <label for="signupCompany">Company Name</label>
-      <input type="text" id="signupCompany" placeholder="Acme Exports Ltd." required />
-
-      <button type="submit" class="btn btn-primary">Create Sandbox Account →</button>
-    </form>
-
-    <div class="modal-foot">By continuing you agree this is a sandbox environment for development purposes.</div>
   </div>
 </div>
 
@@ -2540,7 +2573,15 @@
 
   // ---------- Signup Modal ----------
 
+  var lastSignupEmail = '';
+
+  function signupShowForm() {
+    document.getElementById('signupFormView').style.display = '';
+    document.getElementById('signupSentView').style.display = 'none';
+  }
+
   function openSignup() {
+    signupShowForm(); // always open on the form view
     document.getElementById('signupOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -2548,6 +2589,39 @@
   function closeSignup() {
     document.getElementById('signupOverlay').classList.remove('open');
     document.body.style.overflow = '';
+    signupShowForm(); // reset for next open
+  }
+
+  // Persistent "check your inbox" panel — replaces the transient toast so
+  // the user can't miss the most important step. Stays until dismissed.
+  function showSignupSent(email) {
+    lastSignupEmail = email;
+    document.getElementById('sentEmail').textContent = email;
+    document.getElementById('signupFormView').style.display = 'none';
+    document.getElementById('signupSentView').style.display = '';
+  }
+
+  async function resendVerification() {
+    var btn = document.getElementById('resendBtn');
+    if (!lastSignupEmail) return;
+    if (!supabaseClient) { showToast('Verification link resent to ' + lastSignupEmail + '.'); return; }
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Resending…';
+    try {
+      var r = await supabaseClient.auth.resend({
+        type: 'signup',
+        email: lastSignupEmail,
+        options: { emailRedirectTo: window.location.origin }
+      });
+      showToast(r && r.error ? ('Could not resend: ' + r.error.message)
+                             : 'Verification link resent — check your inbox (and spam).');
+    } catch (e) {
+      showToast('Could not resend right now. Please try again shortly.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
   }
 
   async function handleSignupSubmit(event) {
@@ -2596,9 +2670,8 @@
         // already registered — no new email is sent in that case.
         showToast('That email is already registered. Check your inbox for the earlier link, or sign in.');
       } else {
-        closeSignup();
         form.reset();
-        showToast('Verification link sent! Check your inbox (and spam) to activate your sandbox account.');
+        showSignupSent(email); // persistent "check your inbox" panel (no auto-dismiss)
         pushHealthLog('Signup initiated for ' + companyName + ' — awaiting email verification', true);
       }
     } catch (err) {
