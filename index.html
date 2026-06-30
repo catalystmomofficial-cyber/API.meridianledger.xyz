@@ -710,6 +710,44 @@
     color: var(--recipient);
   }
 
+  .terminal-status.calc { color: #FBBF24; }
+
+  /* Typewriter caret + controls for the live playground */
+  .type-cursor {
+    display: inline-block;
+    width: 7px;
+    height: 1.05em;
+    background: var(--accent-strong);
+    vertical-align: -0.18em;
+    margin-left: 1px;
+    border-radius: 1px;
+    animation: caretBlink 1s step-end infinite;
+  }
+
+  @keyframes caretBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .playground-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .pg-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .pg-btn:hover { color: var(--accent-strong); border-color: var(--accent); }
+  .pg-btn[aria-pressed="true"] { color: var(--accent-strong); border-color: var(--accent); }
+
   /* ---------- CTA BANNER ---------- */
   .cta-banner {
     margin: 0 0 96px;
@@ -1863,6 +1901,11 @@
       <p>Request a quote, lock the rate, and settle — the response carries every number you need to reconcile, including how many FX legs were compounded.</p>
     </div>
 
+    <div class="playground-controls">
+      <button type="button" class="pg-btn" id="pgReplay" onclick="runPlayground(true)">↻ Replay</button>
+      <button type="button" class="pg-btn" id="pgSound" aria-pressed="false" onclick="togglePgSound()">🔇 Sound: Off</button>
+    </div>
+
     <div class="playground-grid">
       <div class="code-card">
         <div class="titlebar">
@@ -1886,7 +1929,7 @@
         <div class="titlebar">
           <div class="dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
           <div class="filename">response.json</div>
-          <span class="terminal-status">● 200 OK</span>
+          <span class="terminal-status" id="pgStatus">● 200 OK</span>
         </div>
         <pre class="code-body" id="res">{
   <span class="tok-key">"status"</span>: <span class="tok-str">"success"</span>,
@@ -2870,6 +2913,122 @@
 
   // Existing "Docs" / "View API Docs" triggers route into the new center.
   function openDocs() { openDocsCenter(); }
+
+  // ---------- Live playground typewriter ----------
+  // On first scroll into view, "type" the request, let the engine
+  // calculate, then stream the response — once, then it stays readable.
+  // Optional synthesized key-click sound, off by default.
+  (function playgroundTyper() {
+    var req = document.getElementById('req');
+    var res = document.getElementById('res');
+    var section = document.getElementById('playground');
+    var statusEl = document.getElementById('pgStatus');
+    if (!req || !res || !section) return;
+
+    function snapshot(pre) {
+      var toks = [];
+      Array.prototype.forEach.call(pre.childNodes, function (n) {
+        if (n.nodeType === 3) toks.push({ cls: null, text: n.textContent });
+        else if (n.nodeType === 1) toks.push({ cls: n.getAttribute('class'), text: n.textContent });
+      });
+      return { html: pre.innerHTML, toks: toks };
+    }
+
+    var reqSnap = snapshot(req), resSnap = snapshot(res);
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Reserve final heights so cards don't jump while typing.
+    req.style.minHeight = req.offsetHeight + 'px';
+    res.style.minHeight = res.offsetHeight + 'px';
+
+    // ----- optional sound -----
+    var soundOn = false, audioCtx = null, lastClick = 0;
+    window.togglePgSound = function () {
+      soundOn = !soundOn;
+      var b = document.getElementById('pgSound');
+      b.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+      b.textContent = soundOn ? '🔊 Sound: On' : '🔇 Sound: Off';
+      if (soundOn && !audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+      }
+      if (soundOn && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    };
+    function keyClick(ch) {
+      if (!soundOn || !audioCtx || ch.trim() === '') return;
+      var now = performance.now();
+      if (now - lastClick < 22) return;
+      lastClick = now;
+      var t = audioCtx.currentTime;
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'square';
+      o.frequency.value = 500 + Math.random() * 130;
+      o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(0.016, t);
+      g.gain.exponentialRampToValueAtTime(0.0004, t + 0.03);
+      o.start(t); o.stop(t + 0.035);
+    }
+
+    function setStatus(state) {
+      if (!statusEl) return;
+      if (state === 'calc') { statusEl.textContent = '● calculating…'; statusEl.classList.add('calc'); }
+      else { statusEl.textContent = '● 200 OK'; statusEl.classList.remove('calc'); }
+    }
+
+    function typePre(pre, snap, cps, done) {
+      pre.innerHTML = '';
+      var cursor = document.createElement('span');
+      cursor.className = 'type-cursor';
+      pre.appendChild(cursor);
+      var ti = 0, ci = 0, cur = null;
+      (function frame() {
+        for (var n = 0; n < cps; n++) {
+          if (ti >= snap.toks.length) { if (cursor.parentNode) pre.removeChild(cursor); done && done(); return; }
+          var t = snap.toks[ti];
+          if (ci === 0) {
+            cur = document.createElement('span');
+            if (t.cls) cur.className = t.cls;
+            pre.insertBefore(cur, cursor);
+          }
+          var ch = t.text.charAt(ci);
+          cur.textContent += ch;
+          keyClick(ch);
+          ci++;
+          if (ci >= t.text.length) { ti++; ci = 0; }
+        }
+        setTimeout(frame, 16);
+      })();
+    }
+
+    var ran = false, running = false;
+    window.runPlayground = function (force) {
+      if (running) return;
+      if (reduce && !force) {
+        req.innerHTML = reqSnap.html; res.innerHTML = resSnap.html; setStatus('ok'); ran = true; return;
+      }
+      running = true;
+      setStatus('calc');
+      res.innerHTML = '';
+      typePre(req, reqSnap, 2, function () {
+        setTimeout(function () {
+          typePre(res, resSnap, 3, function () {
+            setStatus('ok'); running = false; ran = true;
+          });
+        }, 460);
+      });
+    };
+
+    // Pre-blank below the fold (when we'll animate) so there's no
+    // full-content flash when the section scrolls into view.
+    if (!reduce && 'IntersectionObserver' in window) {
+      req.innerHTML = ''; res.innerHTML = ''; setStatus('calc');
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && !ran && !running) { runPlayground(false); io.disconnect(); }
+        });
+      }, { threshold: 0.35 });
+      io.observe(section);
+    }
+  })();
 
   // ---------- Live corridor rotation ----------
   // Cycle the hero corridor through several real lanes to show multi-rail
