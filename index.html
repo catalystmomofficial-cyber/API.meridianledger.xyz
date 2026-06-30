@@ -2349,7 +2349,18 @@
       // so the console only auto-opens on a fresh verification/sign-in.)
       supabaseClient.auth.onAuthStateChange(function (event, session) {
         if (event === 'SIGNED_IN' && session) {
-          var meta = (session.user && session.user.user_metadata) || {};
+          var user = session.user || {};
+
+          // Gate access on a CONFIRMED email. If the email has not been
+          // verified yet, do not open the console — sign the session back
+          // out so an unconfirmed user can never get in.
+          if (!user.email_confirmed_at && !user.confirmed_at) {
+            supabaseClient.auth.signOut();
+            showToast('Please confirm your email first — check your inbox for the verification link.');
+            return;
+          }
+
+          var meta = user.user_metadata || {};
           var companyName = meta.company_name || 'your company';
 
           // Strip the auth tokens out of the address bar after handling them.
