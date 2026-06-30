@@ -2593,6 +2593,8 @@
         email: email,
         password: password,
         options: {
+          // Send the confirmation link back to this site.
+          emailRedirectTo: window.location.origin,
           data: {
             company_name: companyName,    // Saves business criteria right to user metadata
             environment_mode: 'sandbox'   // Drops them natively into sandbox mode
@@ -2600,12 +2602,17 @@
         }
       });
 
+      var u = result.data && result.data.user;
       if (result.error) {
         showToast('Registration Error: ' + result.error.message);
+      } else if (u && Array.isArray(u.identities) && u.identities.length === 0) {
+        // Supabase returns a user with no identities when the email is
+        // already registered — no new email is sent in that case.
+        showToast('That email is already registered. Check your inbox for the earlier link, or sign in.');
       } else {
         closeSignup();
         form.reset();
-        showToast('Verification link sent! Check your inbox to activate your sandbox account.');
+        showToast('Verification link sent! Check your inbox (and spam) to activate your sandbox account.');
         pushHealthLog('Signup initiated for ' + companyName + ' — awaiting email verification', true);
       }
     } catch (err) {
