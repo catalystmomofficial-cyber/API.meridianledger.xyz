@@ -1145,6 +1145,9 @@
     margin: 4px 0 18px;
   }
 
+  .modal-link { color: var(--accent-strong); font-weight: 600; }
+  .modal-link:hover { text-decoration: underline; }
+
   .modal-card form label {
     display: block;
     font-size: 12.5px;
@@ -1691,8 +1694,8 @@
     .playground-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
     /* Trim the header to brand + theme + primary CTA so it never
-       overflows narrow screens. (Sign In opens the same modal as Get
-       API Keys; Docs is reachable from the hero.) */
+       overflows narrow screens. (Sign In is reachable from the signup
+       modal's "Already have an account?" link; Docs from the hero.) */
     .nav-cta .btn-secondary { display: none; }
     .console-grid { grid-template-columns: repeat(2, 1fr); }
   }
@@ -1749,7 +1752,7 @@
         <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
       </button>
       <a href="#" class="btn btn-secondary btn-sm" onclick="openDocs(); return false;">View API Docs</a>
-      <button type="button" class="btn btn-secondary btn-sm" onclick="openSignup()">Sign In</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openSignin()">Sign In</button>
       <a href="#" class="btn btn-primary btn-sm" onclick="openSignup(); return false;">Get API Keys</a>
     </div>
   </div>
@@ -2238,6 +2241,27 @@
 <div class="modal-overlay" id="signupOverlay">
   <div class="modal-card">
 
+    <!-- SIGN IN VIEW -->
+    <div id="signupSigninView" style="display:none;">
+      <div class="modal-head">
+        <h3>Sign in</h3>
+        <button type="button" class="console-close" onclick="closeSignup()">✕</button>
+      </div>
+      <p class="modal-sub">Welcome back. Sign in to your developer console.</p>
+
+      <form id="signinForm" onsubmit="handleSignin(event)">
+        <label for="signinEmail">Email</label>
+        <input type="email" id="signinEmail" placeholder="you@company.com" required />
+
+        <label for="signinPassword">Password</label>
+        <input type="password" id="signinPassword" placeholder="••••••••" required />
+
+        <button type="submit" class="btn btn-primary">Sign in →</button>
+      </form>
+
+      <div class="modal-foot">New here? <a href="#" onclick="signupShowForm(); return false;" class="modal-link">Create a sandbox account</a></div>
+    </div>
+
     <!-- FORM VIEW -->
     <div id="signupFormView">
       <div class="modal-head">
@@ -2259,7 +2283,8 @@
         <button type="submit" class="btn btn-primary">Create Sandbox Account →</button>
       </form>
 
-      <div class="modal-foot">By continuing you agree this is a sandbox environment for development purposes.</div>
+      <div class="modal-foot">Already have an account? <a href="#" onclick="signupShowSignin(); return false;" class="modal-link">Sign in</a></div>
+      <div class="modal-foot" style="margin-top:8px;">By continuing you agree this is a sandbox environment for development purposes.</div>
     </div>
 
     <!-- CHECK INBOX VIEW (persistent, dismissible) -->
@@ -2590,16 +2615,25 @@
 
   var lastSignupEmail = '';
 
-  function signupShowForm() {
-    document.getElementById('signupFormView').style.display = '';
-    document.getElementById('signupSentView').style.display = 'none';
+  // The modal has three views: sign-in, create-account (form), and the
+  // "check your inbox" panel. These helpers switch between them.
+  function setModalView(view) {
+    document.getElementById('signupSigninView').style.display = view === 'signin' ? '' : 'none';
+    document.getElementById('signupFormView').style.display = view === 'form' ? '' : 'none';
+    document.getElementById('signupSentView').style.display = view === 'sent' ? '' : 'none';
   }
+  function signupShowForm() { setModalView('form'); }
+  function signupShowSignin() { setModalView('signin'); }
 
-  function openSignup() {
-    signupShowForm(); // always open on the form view
+  function openModal() {
     document.getElementById('signupOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  // "Get API Keys" / "Sign Up" → create-account view.
+  function openSignup() { signupShowForm(); openModal(); }
+  // "Sign In" → login view for returning users.
+  function openSignin() { signupShowSignin(); openModal(); }
 
   function closeSignup() {
     document.getElementById('signupOverlay').classList.remove('open');
@@ -2612,8 +2646,39 @@
   function showSignupSent(email) {
     lastSignupEmail = email;
     document.getElementById('sentEmail').textContent = email;
-    document.getElementById('signupFormView').style.display = 'none';
-    document.getElementById('signupSentView').style.display = '';
+    setModalView('sent');
+  }
+
+  // Sign in an existing, verified user. On success the SIGNED_IN handler
+  // (which gates on a confirmed email) opens the developer console.
+  async function handleSignin(event) {
+    event.preventDefault();
+    var form = document.getElementById('signinForm');
+    var btn = form.querySelector('button[type="submit"]');
+    var email = document.getElementById('signinEmail').value.trim();
+    var password = document.getElementById('signinPassword').value;
+
+    if (!supabaseClient) { // demo fallback when Supabase isn't configured
+      closeSignup(); form.reset(); openConsole();
+      showToast('Signed in (sandbox preview).');
+      return;
+    }
+
+    var original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    try {
+      var r = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+      if (r.error) {
+        showToast('Sign-in failed: ' + r.error.message);
+      } else {
+        form.reset();
+        closeSignup(); // SIGNED_IN handler opens the console + greets
+      }
+    } catch (e) {
+      showToast('Sign-in failed. Please try again.');
+    } finally {
+      btn.disabled = false; btn.textContent = original;
+    }
   }
 
   async function resendVerification() {
